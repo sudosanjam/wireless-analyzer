@@ -1,10 +1,10 @@
-# Signal Observer
+# Wireless Analyzer
 
 ### Kali Linux-First Passive Wireless Signal Observation & Environmental Analysis Platform
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Platform: Kali Linux](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20Debian%20%7C%20Ubuntu-red.svg)](https://www.kali.org/)
-[![Offline First](https://img.shields.io/badge/Offline-100%25%20Local-success.svg)](#offline-first-operation)
+[![Offline First](https://img.shields.io/badge/Offline-100%25%20Local-success.svg)](#23-privacy-architecture)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -12,8 +12,8 @@
 ## ⚡ QUICK START
 
 ```bash
-git clone <repository>
-cd Analyzer
+git clone https://github.com/sudosanjam/wireless-analyzer.git
+cd wireless-analyzer
 ./install.sh
 ./run.sh
 ```
@@ -65,7 +65,7 @@ To launch in simulated demonstration / test mode without physical wireless adapt
 
 ## 1. Overview
 
-**Signal Observer** is an open-source, locally-hosted, offline-capable passive wireless signal observation and environmental telemetry platform designed primarily for **Kali Linux**, Debian, and Ubuntu environments.
+**Wireless Analyzer** is an open-source, locally-hosted, offline-capable passive wireless signal observation and environmental telemetry platform designed primarily for **Kali Linux**, Debian, and Ubuntu environments.
 
 The platform transforms raw, broadcast RF metadata exposed to local system interfaces into structured, actionable environmental intelligence without actively communicating with, disrupting, or probing remote devices.
 
@@ -92,7 +92,7 @@ $$\text{Observe} \longrightarrow \text{Normalize} \longrightarrow \text{Correlat
 
 ## 3. Passive Observation Model
 
-Signal Observer maintains strict adherence to passive monitoring boundaries:
+Wireless Analyzer maintains strict adherence to passive monitoring boundaries:
 - It only captures metadata **broadcast or locally exposed** to the host system.
 - It does **not** transmit probe requests into unmanaged channels unless active survey is explicitly enabled.
 - It does **not** authenticate, associate, pair, or establish transport-layer connections to observed devices.
@@ -145,8 +145,8 @@ To maintain safety, legality, and stability in production environments, the plat
 
 Run the automated installer and start observing:
 ```bash
-git clone https://github.com/example/signal-observer.git
-cd signal-observer
+git clone https://github.com/sudosanjam/wireless-analyzer.git
+cd wireless-analyzer
 ./install.sh
 ./run.sh
 ```
@@ -339,28 +339,28 @@ python -m application diag
 ```
 Output:
 ```text
-═══════════════════════════════════════════════════════════════════════════
-         SIGNAL OBSERVER — PRE-FLIGHT SYSTEM DIAGNOSTICS                   
-═══════════════════════════════════════════════════════════════════════════
+===========================================================================
+         SIGNAL OBSERVER - PRE-FLIGHT SYSTEM DIAGNOSTICS                   
+===========================================================================
 
 [Runtime]
-  [✓] AVAILABLE   Python Version           : Python 3.13.15
-  [✓] AVAILABLE   Operating System         : Linux-6.6.0-kali-amd64 (Kali Linux)
+  [+] AVAILABLE   Python Version           : Python 3.13.15
+  [i] INFO        Operating System         : Linux-6.6.0-kali-amd64 (Kali Linux)
 
 [Storage]
-  [✓] AVAILABLE   SQLite3 Support          : SQLite version 3.45.1 (WAL mode supported)
+  [+] AVAILABLE   SQLite3 Support          : SQLite version 3.45.1 (WAL mode supported)
 
 [Datasets]
-  [✓] AVAILABLE   Local OUI Database       : Found data/oui/oui.csv (100% offline)
+  [+] AVAILABLE   Local OUI Database       : Found data/oui/oui.csv (100% offline)
 
 [Wi-Fi Tools]
-  [✓] AVAILABLE   NetworkManager (nmcli)   : Binary at /usr/bin/nmcli
-  [✓] AVAILABLE   nl80211 Tool (iw)        : Binary at /usr/bin/iw
+  [+] AVAILABLE   NetworkManager (nmcli)   : Binary at /usr/bin/nmcli
+  [+] AVAILABLE   nl80211 Tool (iw)        : Binary at /usr/bin/iw
 
 [Hardware]
-  [✓] AVAILABLE   Wi-Fi Interfaces         : Found: wlan0 (UP)
-  [✓] AVAILABLE   Bluetooth Adapters       : Found: hci0
-═══════════════════════════════════════════════════════════════════════════
+  [+] AVAILABLE   Wi-Fi Interfaces         : Found: wlan0 (UP)
+  [+] AVAILABLE   Bluetooth Adapters       : Found: hci0
+===========================================================================
 ```
 
 ---
@@ -416,9 +416,9 @@ Run the complete test suite with `pytest`:
 ```bash
 pytest
 ```
-Run with coverage:
+Run with verbose output:
 ```bash
-pytest -v --asyncio-mode=auto
+pytest -v
 ```
 
 ---
@@ -427,17 +427,17 @@ pytest -v --asyncio-mode=auto
 
 For headless remote field observation nodes, configure an optional systemd service:
 
-`/etc/systemd/system/signal-observer.service`:
+`/etc/systemd/system/wireless-analyzer.service`:
 ```ini
 [Unit]
-Description=Signal Observer Passive Wireless Platform
+Description=Wireless Analyzer Passive Platform
 After=network.target NetworkManager.service bluetooth.target
 
 [Service]
 Type=simple
 User=kali
-WorkingDirectory=/opt/signal-observer
-ExecStart=/opt/signal-observer/.venv/bin/python -m application run --host 0.0.0.0 --port 8000
+WorkingDirectory=/opt/wireless-analyzer
+ExecStart=/opt/wireless-analyzer/.venv/bin/python -m application run --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=5
 
@@ -448,7 +448,7 @@ WantedBy=multi-user.target
 Enable and start:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now signal-observer
+sudo systemctl enable --now wireless-analyzer
 ```
 
 ---

@@ -1,0 +1,33 @@
+# Signal Observer - Watchlist Configuration
+# Define patterns to trigger HIGH priority visual/audio alerts
+
+watchlist:
+  - match_type: "SSID_REGEX"
+    pattern: "(?i)(corp-secure|internal-wifi|classified|surveillance)"
+    label: "Sensitive SSID Pattern"
+    priority: "HIGH"
+    enabled: true
+
+  - match_type: "MANUFACTURER"
+    pattern: "Flipper Devices"
+    label: "Flipper Zero / Multi-tool"
+    priority: "HIGH"
+    enabled: true
+
+  - match_type: "OUI"
+    pattern: "B8:27:EB"
+    label: "Raspberry Pi Legacy OUI"
+    priority: "MEDIUM"
+    enabled: true
+
+  - match_type: "OUI"
+    pattern: "DC:A6:32"
+    label: "Raspberry Pi Foundation OUI"
+    priority: "MEDIUM"
+    enabled: true
+
+  - match_type: "SSID_EXACT"
+    pattern: "pwnagotchi"
+    label: "Pwnagotchi Node"
+    priority: "HIGH"
+    enabled: true

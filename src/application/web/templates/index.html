@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Observer — Passive Signal Observation Platform</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="dark-theme">
+    <!-- Top System Telemetry Ribbon -->
+    <header class="system-ribbon">
+        <div class="brand-section">
+            <div class="status-pulse active" id="system-status-indicator"></div>
+            <div class="brand-titles">
+                <span class="brand-logo">SIGNAL // OBSERVER</span>
+                <span class="brand-subtitle" id="backend-status-badge">KALI REFERENCE TARGET — PASSIVE MONITORING</span>
+            </div>
+        </div>
+
+        <div class="metrics-ticker">
+            <div class="ticker-item">
+                <span class="ticker-label">SESSION</span>
+                <span class="ticker-val highlight" id="stat-session-id">INITIALIZING</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">RUNTIME</span>
+                <span class="ticker-val" id="stat-runtime">00:00:00</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">TOTAL CONTACTS</span>
+                <span class="ticker-val" id="stat-total-contacts">0</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">ACTIVE / NEW</span>
+                <span class="ticker-val active-green" id="stat-active-contacts">0 / 0</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">SPECTRUM (WIFI / BLE)</span>
+                <span class="ticker-val" id="stat-wifi-ble-ratio">0 / 0</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">WATCHLIST ALERTS</span>
+                <span class="ticker-val alert-red" id="stat-watchlist-alerts">0</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <button id="audio-toggle-btn" class="btn btn-icon btn-secondary" title="Toggle Tactical Audio Alerts (Web Audio API)">
+                <span id="audio-icon">🔇 AUDIO: OFF</span>
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary" id="export-btn">EXPORT ▼</button>
+                <div class="dropdown-content">
+                    <a href="/api/export/debrief" target="_blank" download="debrief.md">📄 Markdown Debrief</a>
+                    <a href="/api/export/json" target="_blank" download="session.json">📦 Structured JSON</a>
+                    <a href="/api/export/csv" target="_blank" download="contacts.csv">📊 Tabular CSV</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="dashboard-grid">
+        <!-- Left Column: Tactical Radar & Scope -->
+        <section class="panel radar-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="icon">⌖</span> TACTICAL SIGNAL SCOPE (RSSI MAPPED)
+                </div>
+                <div class="scope-legend">
+                    <span class="legend-pill wifi-pill"><span class="dot"></span> Wi-Fi</span>
+                    <span class="legend-pill ble-pill"><span class="dot"></span> BLE</span>
+                    <span class="legend-pill alert-pill"><span class="dot"></span> Watchlist</span>
+                </div>
+            </div>
+
+            <div class="radar-container" id="radar-wrapper">
+                <canvas id="radar-canvas" width="600" height="600"></canvas>
+                <div class="radar-disclaimer">
+                    Relative RSSI mapped representation. Angle is a stable hash for visual separation, not physical bearing or distance.
+                </div>
+                <div id="radar-tooltip" class="radar-tooltip" style="display: none;"></div>
+            </div>
+
+            <div class="radar-controls">
+                <span id="radar-sweep-toggle" class="control-toggle active">SWEEP: ON</span>
+                <span class="radar-ring-stat" id="radar-center-dbm">CENTER: -30 dBm</span>
+                <span class="radar-ring-stat" id="radar-edge-dbm">PERIMETER: -95 dBm</span>
+            </div>
+        </section>
+
+        <!-- Right Column: Live Matrix, Analytics & Environmental Events -->
+        <section class="panel matrix-panel">
+            <!-- Tabs -->
+            <div class="panel-header tabs-header">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="tab-contacts">LIVE CONTACTS (<span id="tab-contact-count">0</span>)</button>
+                    <button class="tab-btn" data-tab="tab-analytics">SPECTRUM ANALYTICS</button>
+                    <button class="tab-btn" data-tab="tab-events">ENVIRONMENTAL EVENTS (<span id="tab-event-count">0</span>)</button>
+                    <button class="tab-btn" data-tab="tab-diagnostics">SYSTEM DIAGNOSTICS</button>
+                </div>
+                <div class="search-filter-bar" id="table-search-bar">
+                    <input type="text" id="contact-search" placeholder="Search SSID, MAC, Vendor, Category..." autocomplete="off">
+                    <select id="filter-type">
+                        <option value="ALL">All Types</option>
+                        <option value="wifi">Wi-Fi Only</option>
+                        <option value="ble">BLE Only</option>
+                    </select>
+                    <select id="filter-state">
+                        <option value="ALL">All States</option>
+                        <option value="ACTIVE">Active Only</option>
+                        <option value="RECENT">Recent</option>
+                        <option value="STALE">Stale</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tab 1: Live Contacts Table -->
+            <div class="tab-content active" id="tab-contacts">
+                <div class="table-container">
+                    <table class="data-table" id="contacts-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="state">STATUS</th>
+                                <th data-sort="signal_type">TYPE</th>
+                                <th data-sort="label">SSID / ADVERTISED NAME</th>
+                                <th data-sort="mac_address">BSSID / MAC</th>
+                                <th data-sort="latest_rssi">SIGNAL (RSSI)</th>
+                                <th data-sort="channel">CH</th>
+                                <th data-sort="manufacturer">MANUFACTURER</th>
+                                <th data-sort="device_category">CATEGORY</th>
+                                <th data-sort="observation_count">OBS</th>
+                                <th data-sort="last_seen">LAST SEEN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-tbody">
+                            <!-- Populated dynamically via JS -->
+                            <tr class="empty-row">
+                                <td colspan="10">Awaiting wireless signal observations...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Spectrum Analytics -->
+            <div class="tab-content" id="tab-analytics">
+                <div class="analytics-layout">
+                    <div class="analytics-card">
+                        <h3>📶 RSSI Distribution</h3>
+                        <div class="stat-bar-group" id="rssi-bars"></div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>📡 Wi-Fi Channel Density</h3>
+                        <div class="channel-chart" id="channel-density-chart"></div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>🏢 Top Identified Hardware Vendors</h3>
+                        <div class="stat-bar-group" id="vendor-bars"></div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>🏷️ Device Classification Breakdown</h3>
+                        <div class="stat-bar-group" id="category-bars"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Environmental Events Log -->
+            <div class="tab-content" id="tab-events">
+                <div class="events-container" id="events-log-list">
+                    <div class="event-item info">
+                        <span class="event-time">00:00:00</span>
+                        <span class="event-badge info">INFO</span>
+                        <span class="event-msg">Observation platform initialized. Listening on configured interfaces.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: System Diagnostics -->
+            <div class="tab-content" id="tab-diagnostics">
+                <div class="diagnostics-container" id="diag-container">
+                    <pre class="diag-terminal" id="diag-terminal-output">Loading pre-flight diagnostics...</pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detail Drawer Modal -->
+    <div class="modal-overlay" id="contact-modal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modal-title">CONTACT DETAILS</h2>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/audio.js"></script>
+    <script src="/static/js/radar.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

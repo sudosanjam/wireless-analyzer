@@ -1,0 +1,45 @@
+# Signal Observer Platform - Central Configuration
+
+server:
+  host: "127.0.0.1"
+  port: 8000
+  debug: false
+
+scanners:
+  wifi_enabled: true
+  ble_enabled: true
+  mock_mode: false
+  scan_interval_seconds: 2.0
+  interface: "auto"        # "auto" or specific (e.g. "wlan0", "wlp2s0")
+  wifi_backend: "auto"     # "auto", "nmcli", "iw", "raw", "mock"
+  ble_backend: "auto"      # "auto", "bleak", "bluez", "mock"
+  active_survey: false     # If true, triggers active probe scans if supported
+
+timeouts:
+  active_threshold_seconds: 6.0    # Present in last scan
+  recent_threshold_seconds: 20.0   # Seen recently (fade state)
+  stale_threshold_seconds: 60.0    # Marked as stale after this period
+
+rssi_thresholds:
+  strong: -55     # >= -55 dBm is STRONG
+  medium: -75     # between -55 and -75 dBm is MEDIUM
+                  # < -75 dBm is WEAK
+
+storage:
+  database_path: "data/app.db"
+  retention_days: 30
+  auto_prune_on_startup: true
+
+alerts:
+  audio_enabled: false     # Audio alerts OFF by default (safety rule)
+  audio_volume: 0.5
+  debounce_seconds: 5.0    # Minimum gap between identical alerts
+
+logging:
+  level: "INFO"           # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+
+paths:
+  oui_database: "data/oui/oui.csv"
+  signatures_file: "config/signatures.yaml"
+  watchlist_file: "config/watchlist.yaml"

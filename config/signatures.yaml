@@ -1,0 +1,172 @@
+# Signal Observer - Signature Classification Rules
+# Evidence-based classification patterns and heuristic scoring
+
+rules:
+  # --- Network Infrastructure / Access Points ---
+  - name: "Cisco Infrastructure"
+    category: "NETWORK_INFRASTRUCTURE"
+    confidence: 0.85
+    reason: "Matched Cisco enterprise networking OUI and infrastructure broadcast capabilities"
+    match:
+      manufacturer_contains: ["Cisco", "Meraki"]
+
+  - name: "Ubiquiti Infrastructure"
+    category: "NETWORK_INFRASTRUCTURE"
+    confidence: 0.88
+    reason: "Matched Ubiquiti UniFi network hardware OUI"
+    match:
+      manufacturer_contains: ["Ubiquiti"]
+
+  - name: "Aruba Enterprise AP"
+    category: "NETWORK_INFRASTRUCTURE"
+    confidence: 0.85
+    reason: "Matched Aruba/HPE enterprise access point OUI"
+    match:
+      manufacturer_contains: ["Aruba", "Hewlett Packard Enterprise"]
+
+  - name: "Ruckus Wireless AP"
+    category: "NETWORK_INFRASTRUCTURE"
+    confidence: 0.85
+    reason: "Matched Ruckus Wireless hardware OUI"
+    match:
+      manufacturer_contains: ["Ruckus"]
+
+  # --- Consumer Routers & Gateways ---
+  - name: "TP-Link Gateway"
+    category: "ROUTER_GATEWAY"
+    confidence: 0.75
+    reason: "Matched TP-Link consumer wireless router/repeater OUI"
+    match:
+      manufacturer_contains: ["TP-Link", "TP-LINK"]
+
+  - name: "Netgear Gateway"
+    category: "ROUTER_GATEWAY"
+    confidence: 0.75
+    reason: "Matched Netgear consumer gateway/extender OUI"
+    match:
+      manufacturer_contains: ["Netgear", "NETGEAR"]
+
+  - name: "ASUS Wireless Gateway"
+    category: "ROUTER_GATEWAY"
+    confidence: 0.75
+    reason: "Matched ASUSTek router/gateway OUI"
+    match:
+      manufacturer_contains: ["ASUSTek", "ASUS"]
+
+  - name: "AVM FRITZ!Box"
+    category: "ROUTER_GATEWAY"
+    confidence: 0.80
+    reason: "Matched AVM FRITZ!Box broadband gateway OUI or SSID"
+    match:
+      manufacturer_contains: ["AVM"]
+      ssid_regex: "(?i)^FRITZ!Box"
+
+  # --- Mobile Devices & Wearables ---
+  - name: "Apple Device"
+    category: "MOBILE_DEVICE"
+    confidence: 0.75
+    reason: "Matched Apple OUI or Apple Continuity BLE manufacturer signature"
+    match:
+      manufacturer_contains: ["Apple"]
+
+  - name: "Samsung Mobile"
+    category: "MOBILE_DEVICE"
+    confidence: 0.72
+    reason: "Matched Samsung Electronics mobile/tablet OUI"
+    match:
+      manufacturer_contains: ["Samsung Electronics"]
+
+  - name: "Google Pixel / Nest"
+    category: "MOBILE_DEVICE"
+    confidence: 0.70
+    reason: "Matched Google LLC hardware OUI"
+    match:
+      manufacturer_contains: ["Google"]
+
+  # --- IoT & Embedded Systems ---
+  - name: "Espressif IoT Module"
+    category: "IOT_EMBEDDED"
+    confidence: 0.85
+    reason: "Matched Espressif (ESP8266/ESP32) microcontroller OUI common in smart home devices"
+    match:
+      manufacturer_contains: ["Espressif"]
+
+  - name: "Raspberry Pi SBC"
+    category: "IOT_EMBEDDED"
+    confidence: 0.85
+    reason: "Matched Raspberry Pi Foundation single board computer OUI"
+    match:
+      manufacturer_contains: ["Raspberry Pi"]
+
+  - name: "Tuya Smart IoT"
+    category: "IOT_EMBEDDED"
+    confidence: 0.82
+    reason: "Matched Tuya smart device OUI or provisioning SSID"
+    match:
+      manufacturer_contains: ["Tuya", "Hangzhou Tuya"]
+      ssid_regex: "(?i)^(SmartLife|Tuya)_"
+
+  - name: "Sonoff IoT"
+    category: "IOT_EMBEDDED"
+    confidence: 0.80
+    reason: "Matched Sonoff / ITEAD smart switch provisioning pattern"
+    match:
+      ssid_regex: "(?i)^ITEAD-"
+
+  - name: "Amazon Echo / Smart Home"
+    category: "IOT_EMBEDDED"
+    confidence: 0.75
+    reason: "Matched Amazon Technologies hardware OUI or setup SSID"
+    match:
+      manufacturer_contains: ["Amazon Technologies"]
+      ssid_regex: "(?i)^Amazon-"
+
+  # --- Audio & Peripherals ---
+  - name: "Bluetooth Audio / Headset"
+    category: "AUDIO_PERIPHERAL"
+    confidence: 0.75
+    reason: "Matched Bluetooth audio service UUIDs (A2DP / Handsfree / Headset)"
+    match:
+      service_uuids: ["0000110b-0000-1000-8000-00805f9b34fb", "0000111e-0000-1000-8000-00805f9b34fb", "00001108-0000-1000-8000-00805f9b34fb"]
+
+  - name: "Sony Audio"
+    category: "AUDIO_PERIPHERAL"
+    confidence: 0.78
+    reason: "Matched Sony Corporation hardware with BLE audio capabilities"
+    match:
+      manufacturer_contains: ["Sony"]
+      device_name_regex: "(?i)(WH-|WF-|SRS-|MDR-)"
+
+  # --- Commercial Hardware & Printers ---
+  - name: "HP Network Printer"
+    category: "COMMERCIAL_HARDWARE"
+    confidence: 0.75
+    reason: "Matched HP wireless printer direct / setup broadcast"
+    match:
+      manufacturer_contains: ["HP Inc.", "Hewlett-Packard"]
+      ssid_regex: "(?i)^DIRECT-.*HP"
+
+  - name: "Canon Wireless Printer"
+    category: "COMMERCIAL_HARDWARE"
+    confidence: 0.75
+    reason: "Matched Canon printer wireless broadcast"
+    match:
+      manufacturer_contains: ["Canon"]
+      ssid_regex: "(?i)^Canon_"
+
+  # --- Consumer Electronics ---
+  - name: "Roku Streaming Device"
+    category: "CONSUMER_ELECTRONICS"
+    confidence: 0.80
+    reason: "Matched Roku streaming player Wi-Fi Direct SSID / OUI"
+    match:
+      manufacturer_contains: ["Roku"]
+      ssid_regex: "(?i)^DIRECT-roku"
+
+  - name: "LG Smart TV"
+    category: "CONSUMER_ELECTRONICS"
+    confidence: 0.75
+    reason: "Matched LG Electronics consumer hardware OUI or TV Wi-Fi Direct"
+    match:
+      manufacturer_contains: ["LG Electronics"]
+      ssid_regex: "(?i)^(\\[LG\\]|LG_)"

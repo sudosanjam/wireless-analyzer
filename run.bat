@@ -1,5 +1,5 @@
 @echo off
-REM Signal Observer - Windows Batch Runner Wrapper
+REM Wireless Analyzer - Windows Batch Runner Wrapper
 set SCRIPT_DIR=%~dp0
 cd /d "%SCRIPT_DIR%"
 

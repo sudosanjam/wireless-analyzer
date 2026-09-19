@@ -137,20 +137,97 @@ def run_diagnostics() -> list[DiagnosticItem]:
             )
         )
 
-    # 7. Bluetooth Adapters & Tools
+    # 7. Bluetooth Tools & Libraries
+    try:
+        import bleak
+        bleak_ver = getattr(bleak, "__version__", "installed")
+        results.append(
+            DiagnosticItem(
+                category="BLE Tools",
+                name="Python Bleak Library",
+                status="AVAILABLE",
+                details=f"Bleak {bleak_ver} (Modern asynchronous cross-platform BLE)",
+            )
+        )
+    except ImportError:
+        results.append(
+            DiagnosticItem(
+                category="BLE Tools",
+                name="Python Bleak Library",
+                status="WARNING",
+                details="Not installed (Run: pip install bleak)",
+            )
+        )
+
     bt_bin = shutil.which("bluetoothctl")
     results.append(
         DiagnosticItem(
             category="BLE Tools",
             name="BlueZ (bluetoothctl)",
             status="AVAILABLE" if bt_bin else "UNAVAILABLE",
-            details=f"Binary at {bt_bin}" if bt_bin else "Not found in PATH",
+            details=f"Binary at {bt_bin}" if bt_bin else "Not found in PATH (Standard on Kali/Linux)",
         )
     )
 
+    # 8. Linux Service & Radio State (Linux only)
+    if is_linux:
+        # Check systemd bluetooth service
+        if shutil.which("systemctl"):
+            try:
+                res = subprocess.run(
+                    ["systemctl", "is-active", "bluetooth"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                )
+                bt_active = res.stdout.strip() == "active"
+                results.append(
+                    DiagnosticItem(
+                        category="BLE State",
+                        name="Bluetooth Service",
+                        status="AVAILABLE" if bt_active else "WARNING",
+                        details="Active (Running)" if bt_active else "Inactive/Stopped (Run: sudo systemctl start bluetooth)",
+                    )
+                )
+            except Exception:
+                pass
+
+        # Check rfkill status
+        if shutil.which("rfkill"):
+            try:
+                res = subprocess.run(
+                    ["rfkill", "list", "bluetooth"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                )
+                output = res.stdout.lower()
+                is_blocked = "soft blocked: yes" in output or "hard blocked: yes" in output
+                if is_blocked:
+                    results.append(
+                        DiagnosticItem(
+                            category="BLE State",
+                            name="rfkill Radio Status",
+                            status="WARNING",
+                            details="BLOCKED by rfkill (Run: sudo rfkill unblock bluetooth)",
+                        )
+                    )
+                else:
+                    results.append(
+                        DiagnosticItem(
+                            category="BLE State",
+                            name="rfkill Radio Status",
+                            status="AVAILABLE",
+                            details="Unblocked",
+                        )
+                    )
+            except Exception:
+                pass
+
+    # 9. Bluetooth Hardware Adapters
     bt_ifaces = discover_bluetooth_interfaces()
     if bt_ifaces:
-        names = ", ".join(i.name for i in bt_ifaces)
+        names = ", ".join(f"{i.name}{' (' + i.mac_address + ')' if i.mac_address else ''}" for i in bt_ifaces)
         results.append(
             DiagnosticItem(
                 category="Hardware",
@@ -160,12 +237,13 @@ def run_diagnostics() -> list[DiagnosticItem]:
             )
         )
     else:
+        hint = "Ensure Bluetooth adapter is connected and unblocked" if is_linux else "No Bluetooth adapter detected"
         results.append(
             DiagnosticItem(
                 category="Hardware",
                 name="Bluetooth Adapters",
                 status="INFO",
-                details="No Bluetooth HCI adapters detected (Wi-Fi scanning proceeds normally)",
+                details=f"No Bluetooth HCI adapters detected ({hint})",
             )
         )
 
@@ -176,7 +254,7 @@ def format_diagnostics_table(results: list[DiagnosticItem]) -> str:
     """Format diagnostic items into a clean, cross-platform terminal report."""
     lines = [
         "===========================================================================",
-        "         SIGNAL OBSERVER - PRE-FLIGHT SYSTEM DIAGNOSTICS                   ",
+        "        WIRELESS ANALYZER - PRE-FLIGHT SYSTEM DIAGNOSTICS                  ",
         "===========================================================================",
     ]
     

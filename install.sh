@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Signal Observer Platform - Kali Linux / Debian / Ubuntu Installer
+# Wireless Analyzer Platform - Kali Linux / Debian / Ubuntu Installer
 # Idempotent, least-privilege installation script
 # ==============================================================================
 
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "======================================================================"
-echo "          SIGNAL OBSERVER — INSTALLATION & ENVIRONMENT SETUP          "
+echo "          WIRELESS ANALYZER — INSTALLATION & ENVIRONMENT SETUP        "
 echo "======================================================================"
 
 # 1. Detect Python 3.11+

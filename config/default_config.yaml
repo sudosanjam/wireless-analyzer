@@ -1,4 +1,4 @@
-# Signal Observer Platform - Central Configuration
+# Wireless Analyzer Platform - Central Configuration
 
 server:
   host: "127.0.0.1"
@@ -10,10 +10,12 @@ scanners:
   ble_enabled: true
   mock_mode: false
   scan_interval_seconds: 2.0
-  interface: "auto"        # "auto" or specific (e.g. "wlan0", "wlp2s0")
+  interface: "auto"        # "auto" or specific Wi-Fi interface (e.g. "wlan0", "wlan1")
   wifi_backend: "auto"     # "auto", "nmcli", "iw", "raw", "mock"
   ble_backend: "auto"      # "auto", "bleak", "bluez", "mock"
+  ble_interface: "auto"    # "auto" or specific Bluetooth interface (e.g. "hci0", "hci1")
   active_survey: false     # If true, triggers active probe scans if supported
+
 
 timeouts:
   active_threshold_seconds: 6.0    # Present in last scan

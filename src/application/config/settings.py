@@ -22,6 +22,7 @@ class ScannerSettings(BaseModel):
     interface: str = "auto"
     wifi_backend: str = "auto"
     ble_backend: str = "auto"
+    ble_interface: str = "auto"
     active_survey: bool = False
 
 

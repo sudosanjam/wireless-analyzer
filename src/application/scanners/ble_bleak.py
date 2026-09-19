@@ -22,6 +22,7 @@ class BleakScannerBackend(BaseScannerBackend):
     def __init__(self, interface: str = "hci0", config: dict[str, Any] | None = None) -> None:
         super().__init__(interface, config)
         self._buffer: deque[RawObservation] = deque(maxlen=500)
+        self._last_error_log: float = 0.0
         self._has_bleak = False
         try:
             import bleak # type: ignore
@@ -51,7 +52,10 @@ class BleakScannerBackend(BaseScannerBackend):
             from bleak import BleakScanner # type: ignore
 
             async def _run_discover():
-                devices = await BleakScanner.discover(timeout=1.5, return_adv=True)
+                kwargs: dict[str, Any] = {"timeout": 1.5, "return_adv": True}
+                if self.interface and self.interface != "auto":
+                    kwargs["adapter"] = self.interface
+                devices = await BleakScanner.discover(**kwargs)
                 return devices
 
             # Run in a clean ephemeral event loop or existing loop
@@ -84,6 +88,21 @@ class BleakScannerBackend(BaseScannerBackend):
                 )
 
         except Exception as e:
-            logger.debug("Bleak scan error: %s", e)
+            now = time.time()
+            # Throttle warning to avoid spamming logs every 2 seconds
+            if now - self._last_error_log > 15.0:
+                self._last_error_log = now
+                err_msg = str(e)
+                if "No Bluetooth adapter found" in err_msg or "NotReady" in err_msg or "Failed" in err_msg:
+                    logger.warning(
+                        "Bleak BLE scan failed (%s). On Kali Linux, ensure Bluetooth is active: "
+                        "1) 'sudo systemctl start bluetooth', 2) 'sudo rfkill unblock bluetooth', 3) 'bluetoothctl power on'",
+                        err_msg,
+                    )
+                else:
+                    logger.warning("Bleak BLE scan error: %s", e)
+            else:
+                logger.debug("Bleak scan error: %s", e)
 
         return results
+

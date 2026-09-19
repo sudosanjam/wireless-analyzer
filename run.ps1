@@ -1,4 +1,4 @@
-# Signal Observer - Windows PowerShell Runner
+# Wireless Analyzer - Windows PowerShell Runner
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 

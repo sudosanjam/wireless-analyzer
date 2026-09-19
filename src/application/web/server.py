@@ -105,7 +105,7 @@ class SignalObserverServer:
             yield
             self.stop_background_scanner()
 
-        self.app = FastAPI(title="Signal Observer", version="0.1.0", lifespan=lifespan)
+        self.app = FastAPI(title="Wireless Analyzer", version="0.1.0", lifespan=lifespan)
         self._setup_app()
 
     def _init_scanners(self) -> None:
@@ -133,10 +133,11 @@ class SignalObserverServer:
         # BLE Backends
         if self.config.scanners.ble_enabled:
             ble_pref = self.config.scanners.ble_backend.lower()
-            if ble_pref == "bleak" or (ble_pref == "auto" and BleakScannerBackend().is_available()):
-                self.scanners.append(BleakScannerBackend())
-            elif ble_pref == "bluez" or (ble_pref == "auto" and BlueZBackend().is_available()):
-                self.scanners.append(BlueZBackend())
+            ble_iface = self.config.scanners.ble_interface
+            if ble_pref == "bleak" or (ble_pref == "auto" and BleakScannerBackend(interface=ble_iface).is_available()):
+                self.scanners.append(BleakScannerBackend(interface=ble_iface))
+            elif ble_pref == "bluez" or (ble_pref == "auto" and BlueZBackend(interface=ble_iface).is_available()):
+                self.scanners.append(BlueZBackend(interface=ble_iface))
 
     def _setup_app(self) -> None:
         static_dir = Path(__file__).parent / "static"

@@ -18,7 +18,7 @@ def setup_logging(level: str = "INFO", log_format: str | None = None) -> logging
     formatter = logging.Formatter(log_format, datefmt="%Y-%m-%d %H:%M:%S")
     handler.setFormatter(formatter)
     
-    root_logger = logging.getLogger("signal_observer")
+    root_logger = logging.getLogger("wireless_analyzer")
     root_logger.setLevel(numeric_level)
     
     # Remove existing handlers to avoid duplicate log entries
@@ -29,5 +29,6 @@ def setup_logging(level: str = "INFO", log_format: str | None = None) -> logging
 
 
 def get_logger(name: str) -> logging.Logger:
-    """Get a child logger under signal_observer namespace."""
-    return logging.getLogger(f"signal_observer.{name}")
+    """Get a child logger under wireless_analyzer namespace."""
+    return logging.getLogger(f"wireless_analyzer.{name}")
+

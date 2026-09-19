@@ -27,7 +27,7 @@ logger = get_logger("cli")
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="signal-observer",
+        prog="wireless-analyzer",
         description="Kali Linux-First Passive Wireless Signal Observation and Environmental Analysis Platform",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
@@ -36,8 +36,10 @@ def main() -> None:
     run_parser = subparsers.add_parser("run", help="Start the live observation engine and dashboard")
     run_parser.add_argument("--host", default="127.0.0.1", help="Dashboard host IP (default: 127.0.0.1)")
     run_parser.add_argument("--port", type=int, default=8000, help="Dashboard port (default: 8000)")
-    run_parser.add_argument("--interface", "-i", default="auto", help="Wireless interface (e.g. wlan0, wlp2s0, auto)")
+    run_parser.add_argument("--interface", "-i", default="auto", help="Wi-Fi interface (e.g. wlan0, wlan1, auto)")
+    run_parser.add_argument("--ble-interface", "-b", default="auto", help="Bluetooth interface (e.g. hci0, hci1, auto)")
     run_parser.add_argument("--backend", choices=["auto", "nmcli", "iw", "raw", "mock"], default="auto", help="Wi-Fi scanner backend")
+    run_parser.add_argument("--ble-backend", choices=["auto", "bleak", "bluez", "mock"], default="auto", help="BLE scanner backend")
     run_parser.add_argument("--mock", action="store_true", help="Run with simulated telemetry (no wireless hardware required)")
     run_parser.add_argument("--no-ble", action="store_true", help="Disable BLE observation")
     run_parser.add_argument("--interval", type=float, default=2.0, help="Observation scan interval in seconds")
@@ -101,7 +103,9 @@ def handle_run(args: argparse.Namespace) -> None:
         },
         "scanners": {
             "interface": getattr(args, "interface", "auto"),
+            "ble_interface": getattr(args, "ble_interface", "auto"),
             "wifi_backend": getattr(args, "backend", "auto"),
+            "ble_backend": getattr(args, "ble_backend", "auto"),
             "mock_mode": getattr(args, "mock", False),
             "scan_interval_seconds": getattr(args, "interval", 2.0),
         },
@@ -115,18 +119,20 @@ def handle_run(args: argparse.Namespace) -> None:
     # Print startup banner and quick diagnostic check
     print(
         r"""
-  ____  _                   _    ___  _                              
- / ___|(_) __ _ _ __   __ _| |  / _ \| |__  ___  ___ _ ____   _____ _ __ 
- \___ \| |/ _` | '_ \ / _` | | | | | | '_ \/ __|/ _ \ '__\ \ / / _ \ '__|
-  ___) | | (_| | | | | (_| | | | |_| | |_) \__ \  __/ |   \ V /  __/ |   
- |____/|_|\__, |_| |_|\__,_|_|  \___/|_.__/|___/\___|_|    \_/ \___|_|   
-          |___/                                                          
+ __        ___          _                  _                     _                     
+ \ \      / (_)_ __ ___| | ___  ___ ___   / \   _ __   __ _  ___| |_   _ _______ _ __ 
+  \ \ /\ / /| | '__/ _ \ |/ _ \/ __/ __| / _ \ | '_ \ / _` |/ / | | | | |_  / _ \ '__|
+   \ V  V / | | | |  __/ |  __/\__ \__ \/ ___ \| | | | (_| | |  | |_| | |/ /  __/ |   
+    \_/\_/  |_|_|  \___|_|\___||___/___/_/   \_\_| |_|\__,_|_|_| \__,_|_/___\___|_|   
+                                                                                       
         PASSIVE WIRELESS SIGNAL OBSERVATION & ENVIRONMENTAL ANALYSIS
         """
     )
     print(f"[*] Platform Target : Kali Linux Reference Target")
-    print(f"[*] Interface       : {config.scanners.interface}")
-    print(f"[*] Scanner Backend : {'MOCK SIMULATION' if config.scanners.mock_mode else config.scanners.wifi_backend}")
+    print(f"[*] Wi-Fi Interface : {config.scanners.interface}")
+    print(f"[*] BLE Interface   : {config.scanners.ble_interface if config.scanners.ble_enabled else 'DISABLED'}")
+    print(f"[*] Wi-Fi Backend   : {'MOCK SIMULATION' if config.scanners.mock_mode else config.scanners.wifi_backend}")
+    print(f"[*] BLE Backend     : {'MOCK SIMULATION' if config.scanners.mock_mode else config.scanners.ble_backend}")
     print(f"[*] Wi-Fi Scanner   : {'ENABLED' if config.scanners.wifi_enabled else 'DISABLED'}")
     print(f"[*] BLE Scanner     : {'ENABLED' if config.scanners.ble_enabled else 'DISABLED'}")
     print(f"[*] Database        : {config.storage.database_path}")

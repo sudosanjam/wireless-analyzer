@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Signal Observer Platform - Runner Script
+# Wireless Analyzer Platform - Runner Script
 # Automatically resolves Python virtual environment and launches application
 # ==============================================================================
 

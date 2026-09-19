@@ -80,9 +80,10 @@ def discover_wifi_interfaces() -> list[InterfaceInfo]:
 
 def discover_bluetooth_interfaces() -> list[InterfaceInfo]:
     """
-    Discover Bluetooth HCI adapters on Linux via /sys/class/bluetooth and bluetoothctl.
+    Discover Bluetooth HCI adapters on Linux via /sys/class/bluetooth, bluetoothctl, and hciconfig.
     """
     adapters: list[InterfaceInfo] = []
+    seen_names = set()
     
     # 1. Inspect Linux sysfs (/sys/class/bluetooth)
     sys_bt = Path("/sys/class/bluetooth")
@@ -96,9 +97,11 @@ def discover_bluetooth_interfaces() -> list[InterfaceInfo]:
                         mac = addr_file.read_text().strip().upper()
                     except Exception:
                         pass
+                name = bt_dir.name
+                seen_names.add(name)
                 adapters.append(
                     InterfaceInfo(
-                        name=bt_dir.name,
+                        name=name,
                         interface_type="ble",
                         is_up=True,
                         mac_address=mac,
@@ -106,7 +109,7 @@ def discover_bluetooth_interfaces() -> list[InterfaceInfo]:
                 )
 
     # 2. Check bluetoothctl if present
-    if not adapters and shutil.which("bluetoothctl"):
+    if shutil.which("bluetoothctl"):
         try:
             res = subprocess.run(
                 ["bluetoothctl", "list"],
@@ -118,15 +121,47 @@ def discover_bluetooth_interfaces() -> list[InterfaceInfo]:
                 # Format: "Controller 00:1A:7D:DA:71:0B hci0 [default]"
                 parts = line.split()
                 if len(parts) >= 3 and parts[0] == "Controller":
-                    adapters.append(
-                        InterfaceInfo(
-                            name=parts[2] if len(parts) > 2 else "hci0",
-                            interface_type="ble",
-                            is_up=True,
-                            mac_address=parts[1] if len(parts) > 1 else None,
+                    name = parts[2] if len(parts) > 2 else "hci0"
+                    if name not in seen_names:
+                        seen_names.add(name)
+                        adapters.append(
+                            InterfaceInfo(
+                                name=name,
+                                interface_type="ble",
+                                is_up=True,
+                                mac_address=parts[1] if len(parts) > 1 else None,
+                            )
                         )
-                    )
+        except Exception:
+            pass
+
+    # 3. Check hciconfig if present
+    if not adapters and shutil.which("hciconfig"):
+        try:
+            res = subprocess.run(
+                ["hciconfig"],
+                capture_output=True,
+                text=True,
+                timeout=3,
+            )
+            current_hci = None
+            for line in res.stdout.splitlines():
+                if line.startswith("hci"):
+                    parts = line.split(":")
+                    if parts:
+                        current_hci = parts[0].strip()
+                        if current_hci not in seen_names:
+                            seen_names.add(current_hci)
+                            is_up = "UP RUNNING" in line
+                            adapters.append(
+                                InterfaceInfo(
+                                    name=current_hci,
+                                    interface_type="ble",
+                                    is_up=is_up,
+                                )
+                            )
         except Exception:
             pass
 
     return adapters
+

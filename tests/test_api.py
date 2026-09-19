@@ -19,7 +19,7 @@ def test_api_endpoints(tmp_path):
     # 1. Main index template
     resp = client.get("/")
     assert resp.status_code == 200
-    assert "SIGNAL // OBSERVER" in resp.text
+    assert "WIRELESS // ANALYZER" in resp.text
     assert "radar-canvas" in resp.text
 
     # 2. Session API

@@ -83,3 +83,16 @@ def test_bluez_parser_and_buffering():
     # 3. Buffer should be drained after scan()
     assert len(backend.scan()) == 0
 
+
+def test_diagnostics_execution():
+    from application.scanners.diagnostics import run_diagnostics, format_diagnostics_table
+    results = run_diagnostics()
+    assert len(results) > 0
+    categories = {r.category for r in results}
+    assert "Runtime" in categories
+    assert "Storage" in categories
+
+    report = format_diagnostics_table(results)
+    assert "WIRELESS ANALYZER - PRE-FLIGHT SYSTEM DIAGNOSTICS" in report
+    assert "Python Version" in report
+

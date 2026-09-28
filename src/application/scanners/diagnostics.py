@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 import sys
 from typing import Any
 from application.scanners.interfaces import discover_wifi_interfaces, discover_bluetooth_interfaces

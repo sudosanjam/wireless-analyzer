@@ -26,6 +26,11 @@ To launch in simulated demonstration / test mode without physical wireless adapt
 ./run.sh --mock
 ```
 
+To repair environment or fix virtualenv/pip issues automatically:
+```bash
+./run.sh --fix
+```
+
 ---
 
 ## TABLE OF CONTENTS
@@ -369,8 +374,10 @@ Output:
 
 | Issue | Cause | Solution |
 |---|---|---|
+| **`No module named application` or broken venv** | Missing `PYTHONPATH` or stale/corrupted virtual environment after system update | Run `./run.sh --fix` to automatically repair the virtual environment, bootstrap pip, and reinstall dependencies. |
+| **`pip isn't installed` or PEP 668 error on Kali** | Debian/Kali package separation or stripped ensurepip | Run `./run.sh --fix` or install system packages: `sudo apt update && sudo apt install -y python3-venv python3-pip python3-full`. |
 | **No Wi-Fi observations appearing** | Interface is down or unmanaged | Run `nmcli device` or `sudo ip link set wlan0 up`. Alternatively use `./run.sh --mock`. |
-| **BLE scanning returns no results** | Bluetooth service stopped or adapter missing | Ensure BlueZ is active (`sudo systemctl start bluetooth`). |
+| **BLE scanning returns no results** | Bluetooth service stopped or adapter missing | Ensure BlueZ is active (`sudo systemctl start bluetooth`) and unblocked (`sudo rfkill unblock bluetooth`). |
 | **Port 8000 already in use** | Another service is using port 8000 | Launch with `--port 8080`: `./run.sh --port 8080`. |
 | **Audio alerts silent** | Browser audio permissions / default mute | Click the **🔊 AUDIO** button in the top ribbon to enable Web Audio synthesis. |
 

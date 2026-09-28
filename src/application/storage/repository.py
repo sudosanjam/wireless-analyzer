@@ -10,6 +10,7 @@ from application.models.contact import CorrelatedContact, ContactState
 from application.models.observation import NormalizedObservation
 from application.models.event import EnvironmentalEvent
 from application.storage.database import DatabaseManager
+from application.utils.sanitization import safe_json_dumps
 from application.utils.logging import get_logger
 
 logger = get_logger("repository")
@@ -43,7 +44,7 @@ class SignalRepository:
                     session.status,
                     session.total_observations,
                     session.unique_contacts,
-                    json.dumps(session.config_snapshot),
+                    safe_json_dumps(session.config_snapshot),
                 ),
             )
 
@@ -230,7 +231,7 @@ class SignalRepository:
                         obs.security,
                         obs.manufacturer,
                         obs.device_category,
-                        json.dumps(obs.raw_metadata),
+                        safe_json_dumps(obs.raw_metadata),
                     )
                     for obs in observations
                 ],
@@ -264,7 +265,7 @@ class SignalRepository:
                     event.mac_address,
                     event.label,
                     event.message,
-                    json.dumps(event.details),
+                    safe_json_dumps(event.details),
                 ),
             )
 

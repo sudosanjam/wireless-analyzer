@@ -72,6 +72,25 @@ class BleakScannerBackend(BaseScannerBackend):
                 rssi = adv_data.rssi if adv_data.rssi is not None else -90
                 uuids = adv_data.service_uuids or []
 
+                # Convert binary byte payloads to clean hex strings for JSON serialization
+                service_data_clean: dict[str, str] = {}
+                if getattr(adv_data, "service_data", None):
+                    for uuid_key, val in adv_data.service_data.items():
+                        service_data_clean[str(uuid_key)] = bytes(val).hex() if isinstance(val, (bytes, bytearray, memoryview)) else str(val)
+
+                mfg_data_clean: dict[str, str] = {}
+                if getattr(adv_data, "manufacturer_data", None):
+                    for cid_key, val in adv_data.manufacturer_data.items():
+                        mfg_data_clean[str(cid_key)] = bytes(val).hex() if isinstance(val, (bytes, bytearray, memoryview)) else str(val)
+
+                raw_payload: dict[str, Any] = {
+                    "adv_flags": service_data_clean,
+                    "service_data": service_data_clean,
+                    "manufacturer_data": mfg_data_clean,
+                }
+                if getattr(adv_data, "tx_power", None) is not None:
+                    raw_payload["tx_power"] = adv_data.tx_power
+
                 results.append(
                     RawObservation(
                         source="ble",
@@ -83,7 +102,7 @@ class BleakScannerBackend(BaseScannerBackend):
                         channel=37,
                         frequency=2402,
                         service_uuids=uuids,
-                        raw_payload={"adv_flags": adv_data.service_data},
+                        raw_payload=raw_payload,
                     )
                 )
 

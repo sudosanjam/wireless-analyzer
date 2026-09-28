@@ -7,7 +7,12 @@ from application.models.observation import RawObservation, NormalizedObservation
 from application.detection.oui import OUILookupEngine
 from application.detection.classifier import DeviceClassifier
 from application.detection.watchlist import WatchlistEngine
-from application.utils.sanitization import sanitize_string, normalize_mac_address, is_locally_administered_mac
+from application.utils.sanitization import (
+    sanitize_string,
+    normalize_mac_address,
+    is_locally_administered_mac,
+    sanitize_raw_metadata,
+)
 from application.utils.logging import get_logger
 
 logger = get_logger("normalizer")
@@ -151,5 +156,5 @@ class ObservationNormalizer:
             priority=final_priority,
             watchlist_matched=watch_result.matched,
             watchlist_notes=watch_result.notes,
-            raw_metadata=raw.raw_payload,
+            raw_metadata=sanitize_raw_metadata(raw.raw_payload),
         )

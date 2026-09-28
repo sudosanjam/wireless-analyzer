@@ -105,3 +105,30 @@ def test_observation_normalization_pipeline(normalizer: ObservationNormalizer):
     assert norm.manufacturer == "Cisco Systems Inc"
     assert norm.device_category == "NETWORK_INFRASTRUCTURE"
     assert norm.session_id == "test-session-123"
+
+
+def test_ble_binary_payload_normalization(normalizer: ObservationNormalizer):
+    raw_ble = RawObservation(
+        source="ble",
+        interface="hci0",
+        raw_identifier="4C:65:A8:D1:22:33",
+        device_name="SmartTag Tracker",
+        rssi=-62,
+        service_uuids=["0000fef3-0000-1000-8000-00805f9b34fb"],
+        raw_payload={
+            "adv_flags": {
+                "0000fef3-0000-1000-8000-00805f9b34fb": b"\x01\x02\x03\x04\xff",
+            },
+            "manufacturer_data": {
+                76: b"\x02\x15\x01\x02\x03\x04",
+            },
+        },
+    )
+    norm = normalizer.normalize(raw_ble, session_id="test-ble-session")
+    assert norm is not None
+    assert norm.source == "ble"
+    # Verify raw_metadata has been recursively converted to json-safe types (bytes -> hex strings, int keys -> str)
+    assert isinstance(norm.raw_metadata["adv_flags"]["0000fef3-0000-1000-8000-00805f9b34fb"], str)
+    assert norm.raw_metadata["adv_flags"]["0000fef3-0000-1000-8000-00805f9b34fb"] == "01020304ff"
+    assert norm.raw_metadata["manufacturer_data"]["76"] == "021501020304"
+

@@ -114,3 +114,35 @@ def test_retention_pruning(repo: SignalRepository):
 
     assert repo.get_session("old-session") is None
     assert repo.get_session("cur-session") is not None
+
+
+def test_insert_observations_with_binary_metadata(repo: SignalRepository):
+    sess = Session(session_id="session-ble-bin")
+    repo.create_session(sess)
+
+    # Observation with raw bytes and nested dictionary in raw_metadata
+    obs = NormalizedObservation(
+        session_id="session-ble-bin",
+        source="ble",
+        interface="hci0",
+        mac_address="AA:BB:CC:DD:EE:FF",
+        is_randomized=True,
+        rssi=-70,
+        rssi_category="MEDIUM",
+        raw_metadata={
+            "adv_flags": {
+                "0000fef3-0000-1000-8000-00805f9b34fb": b"\xaa\xbb\xcc",
+            },
+            "raw_bytes": b"binary_blob",
+            "tags_set": {"ble", "proximity"},
+        },
+    )
+
+    # Should not raise TypeError: Object of type bytes is not JSON serializable
+    repo.insert_observations_batch([obs])
+
+    saved = repo.get_session_observations("session-ble-bin")
+    assert len(saved) == 1
+    assert saved[0]["mac_address"] == "AA:BB:CC:DD:EE:FF"
+    assert "aabbcc" in saved[0]["raw_metadata_json"]
+

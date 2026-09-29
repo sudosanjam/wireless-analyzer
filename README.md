@@ -9,6 +9,13 @@
 
 ---
 
+<div align="center">
+  <img src="assets/wireless-analyzer-preview.png" alt="Wireless Analyzer Local Web Dashboard" width="100%" />
+  <p><em>Wireless Analyzer 100% local, offline web dashboard (http://127.0.0.1:8000) featuring tactical canvas signal radar, live contacts table, and RSSI telemetry.</em></p>
+</div>
+
+---
+
 ## ⚡ QUICK START
 
 ```bash
